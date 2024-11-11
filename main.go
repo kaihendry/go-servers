@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime/debug"
 
 	"math/rand"
 )
@@ -29,6 +30,13 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		buildInfo, ok := debug.ReadBuildInfo()
+		if !ok {
+			log.Fatal("debug.ReadBuildInfo() failed")
+		}
+		w.Header().Set("X-Version", buildInfo.Main.Version)
+
 		err = tmpls.ExecuteTemplate(w, "index.html", nil)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

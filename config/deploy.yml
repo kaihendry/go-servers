@@ -18,5 +18,4 @@ ssh:
   user: hendry
 
 proxy:
-  ssl: false
   app_port: 8080
