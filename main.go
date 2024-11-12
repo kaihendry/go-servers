@@ -22,6 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	http.HandleFunc("/clicked", func(w http.ResponseWriter, r *http.Request) {
 		envmap := make(map[string]string)
 		for _, e := range os.Environ() {
@@ -53,5 +54,6 @@ func main() {
 			log.Fatal(err)
 		}
 	})
+	
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }
