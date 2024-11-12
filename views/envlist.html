@@ -1,0 +1,8 @@
+<div id="parent-div">
+<dl>
+{{ range $key, $value := .Env }}
+    <dt>{{ $key }}</dt>
+    <dd>{{ $value }}</dd>
+{{ end }}
+</dl>
+</div>

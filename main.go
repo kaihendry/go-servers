@@ -7,29 +7,39 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
-
-	"math/rand"
+	"strings"
 )
 
 //go:embed views/*
 var viewsFS embed.FS
 
 func main() {
+
+	tmpls, err := template.New("").
+		ParseFS(viewsFS,
+			"views/*.html",
+		)
+	if err != nil {
+		log.Fatal(err)
+	}
 	http.HandleFunc("/clicked", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		greetings := []string{"hello", "hi", "howdy", "hola", "bonjour", "ciao", "hallo", "hej", "guten tag", "namaste", "ni hao", "salut", "merhaba", "こんにちは", "안녕하세요", "안녕", "你好", "नमस्ते", "П��ивет", "你好", "Olá", "Hallo", "Ciao", "Hola", "Bonjour", "Merhaba", "こんにちは", "안녕하세요", "안녕", "你好", "नमस्ते", "Привет", "你好", "Olá", "Hallo", "Ciao", "Hola", "Bonjour", "Merhaba", "こんにちは", "안녕하세요", "안녕", "你好", "नमस्ते", "Привет", "你好", "Olá", "Hallo", "Ciao", "Hola", "Bonjour", "Merhaba"}
-		randomGreeting := greetings[rand.Intn(len(greetings))]
-		w.Write([]byte("<div id=\"parent-div\"><h1>" + randomGreeting + "</h1></div>"))
+		envmap := make(map[string]string)
+		for _, e := range os.Environ() {
+			ep := strings.SplitN(e, "=", 2)
+			envmap[ep[0]] = ep[1]
+		}
+		err = tmpls.ExecuteTemplate(w, "envlist.html", struct {
+			Env map[string]string
+		}{
+			Env: envmap,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Fatal(err)
+		}
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		tmpls, err := template.New("").
-			ParseFS(viewsFS,
-				"views/*.html",
-			)
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		buildInfo, ok := debug.ReadBuildInfo()
 		if !ok {
